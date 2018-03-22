@@ -3,7 +3,7 @@ import scipy.io as spio
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import freqz
-from scipy.signal import butter, lfilter
+from scipy.signal import butter, lfilter, lfilter_zi
 
 from scipy.signal import filtfilt
 
@@ -112,33 +112,37 @@ def bandpass_filt(fs, lowcut, highcut, shifted_data_object):
         for i in range(len(trial)):
             all_data[i] = list(all_data[i]) + list(trial[i][0])
 
+    # Get the indices used to compose / decompose the all_data matrix
+    trial_lengths = []
+    for trial_num in range(len(shifted_data_object)):
+        trial_lengths.append(len(shifted_data_object[trial_num][0][0]))
 
     # Plot the function we wish to filter
-    print(len(all_data[0])/fs)
     T = len(all_data[0])/fs
     nsamples = int(T * fs)
     t = np.linspace(0, T, nsamples, endpoint=False)
-    x = all_data[0][:nsamples]
-    plt.figure(2)
-    plt.clf()
-    #plt.plot(t, x, label='Noisy signal')
-    plt.plot(x, label='Noisy signal')
-    """
-    # Filter a noisy signal
-    y = butter_bandpass_filter(x, lowcut, highcut, fs, order=6)
-    plt.plot(t[:60000], y[:60000], label='Filtered signal')
-    plt.axis('tight')
-    plt.legend(loc='upper left')
-    plt.show()
-    """
-    # Use filtfilt to filter the complete signal
-    b, a = butter_bandpass(lowcut, highcut, fs)
-    y = filtfilt(b, a, x, padlen = 50)
-    #plt.plot(y, 'c-', label='Filtered signal', linewidth=1.5)
-    #plt.axis('tight')
-    #plt.legend(loc='upper left')
-    plt.show()
 
+    # Filter all of the channels individually
+    b, a = butter_bandpass(lowcut, highcut, fs)
+    y_filtered = []
+    for i in range(len(all_data)):
+        x = all_data[i][:nsamples]
+        y = filtfilt(b, a, x, padlen = 1000)
+        ## Or, lfilter_zi
+        #zi = lfilter_zi(b, a)
+        #y3, zo = lfilter(b, a, x, zi=zi*x[0])
+        y_filtered.append(y)
+
+    # Plot some of the filtered data
+    for i in range(len(y_filtered)):
+        plt.figure(2+i)
+        plt.clf()
+        plt.plot(t, y_filtered[i], 'c-', label=("filtfilt signal channel " + str(i+1)), linewidth=1.5)
+        plt.axis('tight')
+        plt.legend(loc='upper left')
+        plt.show()
+
+    return y_filtered
 
 if __name__ == '__main__':
     #sample_rate = int(sys.argv[1])
@@ -155,6 +159,6 @@ if __name__ == '__main__':
     print(len(data_object))
     shifted_data_object = reframe(stimulus_delay, data_object, sample_rate)
 
-    bandpass_filt(sample_rate, low_cut, high_cut, shifted_data_object)
+    filtered_data = bandpass_filt(sample_rate, low_cut, high_cut, shifted_data_object)
 
     sys.stdout.write('Hello World')
