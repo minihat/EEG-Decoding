@@ -142,6 +142,9 @@ def bandpass_filt(fs, lowcut, highcut, shifted_data_object):
         plt.legend(loc='upper left')
         plt.show()
 
+
+
+    # But we don't want to return y_filtered, we want to return y_filtered separated by trial
     return y_filtered
 
 if __name__ == '__main__':
