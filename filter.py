@@ -176,8 +176,8 @@ def windowed_bandpower(filtered_data, band_low, band_high, windowsize, windowste
         #print(slice_width/fs - windowhalf)
         j = windowhalf
         while j <= (slice_width/fs - windowhalf):
-            data_subset = filtered_data[i][int(sample_rate*j-(sample_rate*windowhalf)):int(sample_rate*j+sample_rate*windowhalf)]
-            power_out = bandpower(data_subset,sample_rate,band_low,band_high)
+            data_subset = filtered_data[i][int(fs*j-(fs*windowhalf)):int(fs*j+fs*windowhalf)]
+            power_out = bandpower(data_subset,fs,band_low,band_high)
             power_data[i].append(power_out)
             j += windowstep
             #print("Writing " + str(power_out) + " to power vector " + str(i+1))
@@ -200,49 +200,41 @@ def mean_slicer(shifted_data_object, filtered_data):
             slices[j] = list(np.array(slices[j]) + np.array(filtered_data[j][lower:upper])/(len(indices)+1))
     return slices, slice_width
 
+def matrix_plotter(plot_data, plot_label):
+    for i in range(len(plot_data)):
+        plt.figure(i+1)
+        plt.clf()
+        plt.plot(plot_data[i], 'c-', label=(str(plot_label) + " for channel " + str(i+1)), linewidth=1.5)
+        plt.axis('tight')
+        plt.legend(loc='upper left')
+    plt.show()
 
 if __name__ == '__main__':
-    #sample_rate = int(sys.argv[1])
-    #load_file = str(sys.argv[2])
-    #stimulus_delay = int(sys.argv[3])
-    #low_cut = int(sys.argv[4])
-    #high_cut = int(sys.argv[5])
     sample_rate = 1000 #Hz
-    #load_file = 'BCI_AlphaBlock_Bruce_180125.mat'
-    load_file = 'feb_1_data.mat'
+    load_file = 'BCI_AlphaBlock_Bruce_180125.mat'
+    #load_file = 'feb_1_data.mat'
     stimulus_delay = 3 #Seconds
     low_cut = 2 #Hz
     high_cut = 60 #Hz
+    # Parameters for calculation of bandpower
     band_low = 7 #Hz
     band_high = 14 #Hz
     windowsize = 3 #seconds
     windowstep = .2 #seconds
 
+    # Load EEG data from .mat file
     data_object = get_data(load_file)
-    print(len(data_object))
+    # Shift each trial by offset to the left. Last trial will have mirrored end.
     shifted_data_object = reframe(stimulus_delay, data_object, sample_rate)
+    # Apply a bandpass filter and concatenate all trials
     filtered_data = bandpass_filt(sample_rate, low_cut, high_cut, shifted_data_object)
+    # Take the mean of filtered data by trial (now length = min(length(trials)))
     mean_trial_data, slice_width = mean_slicer(shifted_data_object, filtered_data)
-    power_data = windowed_bandpower(mean_trial_data, band_low, band_high, windowsize, windowstep, sample_rate, slice_width)
+    # Calculate the bandpower for alpha, beta, etc defined by [band_low, band_high]
+    alpha_power_data = windowed_bandpower(mean_trial_data, band_low, band_high, windowsize, windowstep, sample_rate, slice_width)
 
+    # Plot the result
+    matrix_plotter(alpha_power_data, "alpha bandpower")
 
-    for i in range(len(power_data)):
-        plt.figure(i+1)
-        plt.clf()
-        plt.plot(power_data[i], 'c-', label=("band power for channel " + str(i+1)), linewidth=1.5)
-        plt.axis('tight')
-        plt.legend(loc='upper left')
-    plt.show()
-
-
-    """
-    for i in range(len(power_data)):
-        plt.figure(i+1)
-        plt.clf()
-        plt.plot(power_data[i], 'c-', label=("band power for channel " + str(i+1)), linewidth=1.5)
-        plt.axis('tight')
-        plt.legend(loc='upper left')
-    plt.show()
-    """
 
     sys.stdout.write('Hello World')
