@@ -86,8 +86,8 @@ def draw(canvas):
         paddle1_pos[0] += paddle1_vel
 
     #if num_players == 1:
-    paddle2_pos[0] = ball_pos[0]
-    paddle1_pos[0] = ball_pos[0]
+    #paddle2_pos[0] = ball_pos[0]
+    #paddle1_pos[0] = ball_pos[0]
 
     if paddle2_pos[0] > HALF_PAD_WIDTH and paddle2_pos[0] < WIDTH - HALF_PAD_WIDTH:
         paddle2_pos[0] += paddle2_vel

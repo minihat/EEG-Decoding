@@ -89,7 +89,7 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
 
 def bandpass_filt(fs, lowcut, highcut, shifted_data_object):
     # Plot the frequency response for a few different orders.
-    plt.figure(1)
+    '''plt.figure(1)
     plt.clf()
     for order in [3, 6, 9]:
         b, a = butter_bandpass(lowcut, highcut, fs, order=order)
@@ -102,7 +102,7 @@ def bandpass_filt(fs, lowcut, highcut, shifted_data_object):
     plt.ylabel('Gain')
     plt.grid(True)
     plt.legend(loc='best')
-    plt.show()
+    plt.show()'''
 
     # Concatenate all of the trials
     # all_data has shape(numchannels, sum_time_all_trials)
@@ -158,16 +158,48 @@ def bandpower(x, fs, fmin, fmax):
     return scipy.trapz(Pxx[ind_min: ind_max], f[ind_min: ind_max])
 
 # Compute the alpha bandpower for each of the channels for all time recorded
-def windowed_bandpower(filtered_data, band_low, band_high, windowsize):
+'''def windowed_bandpower(filtered_data, band_low, band_high, windowsize, fs, slice_width):
     power_data = [[] for k in range(len(filtered_data))]
     windowhalf = int(windowsize/2)
     for i in range(len(filtered_data)):
-        for j in range(windowhalf,101-windowhalf,1):
+        for j in range(windowhalf,int(slice_width/fs)-windowhalf,1):
             data_subset = filtered_data[i][(sample_rate*j-(sample_rate*windowhalf)):(sample_rate*j+sample_rate*windowhalf)]
             power_out = bandpower(data_subset,sample_rate,band_low,band_high)
             power_data[i].append(power_out)
             #print("Writing " + str(power_out) + " to power vector " + str(i+1))
+    return power_data'''
+
+def windowed_bandpower(filtered_data, band_low, band_high, windowsize, windowstep, fs, slice_width):
+    power_data = [[] for k in range(len(filtered_data))]
+    windowhalf = windowsize/2
+    for i in range(len(filtered_data)):
+        #print(slice_width/fs - windowhalf)
+        j = windowhalf
+        while j <= (slice_width/fs - windowhalf):
+            data_subset = filtered_data[i][int(sample_rate*j-(sample_rate*windowhalf)):int(sample_rate*j+sample_rate*windowhalf)]
+            power_out = bandpower(data_subset,sample_rate,band_low,band_high)
+            power_data[i].append(power_out)
+            j += windowstep
+            #print("Writing " + str(power_out) + " to power vector " + str(i+1))
     return power_data
+
+def mean_slicer(shifted_data_object, filtered_data):
+    indices = []
+    for i in range(len(shifted_data_object)):
+        indices.append(len(shifted_data_object[i][0][0]))
+    print(indices)
+    slice_width = min(indices)
+    print("Slice_width: " + str(slice_width))
+    slices=[list(np.zeros(slice_width)) for i in range(len(filtered_data))]
+    slice_width = min(indices)
+    for j in range(len(filtered_data)):
+        for i in range(len(indices)):
+            lower = sum(indices[:i])
+            upper = lower + slice_width
+            print("Working on channel " + str(i + 1) + " slices with indices " + str(lower) + " to " + str(upper) + ".")
+            slices[j] = list(np.array(slices[j]) + np.array(filtered_data[j][lower:upper])/(len(indices)+1))
+    return slices, slice_width
+
 
 if __name__ == '__main__':
     #sample_rate = int(sys.argv[1])
@@ -176,31 +208,31 @@ if __name__ == '__main__':
     #low_cut = int(sys.argv[4])
     #high_cut = int(sys.argv[5])
     sample_rate = 1000 #Hz
-    load_file = 'BCI_AlphaBlock_Bruce_180125.mat'
+    #load_file = 'BCI_AlphaBlock_Bruce_180125.mat'
+    load_file = 'feb_1_data.mat'
     stimulus_delay = 3 #Seconds
     low_cut = 2 #Hz
     high_cut = 60 #Hz
     band_low = 7 #Hz
     band_high = 14 #Hz
-    windowsize = 4 #seconds
+    windowsize = 3 #seconds
+    windowstep = .2 #seconds
 
     data_object = get_data(load_file)
     print(len(data_object))
     shifted_data_object = reframe(stimulus_delay, data_object, sample_rate)
+    filtered_data = bandpass_filt(sample_rate, low_cut, high_cut, shifted_data_object)
+    mean_trial_data, slice_width = mean_slicer(shifted_data_object, filtered_data)
+    power_data = windowed_bandpower(mean_trial_data, band_low, band_high, windowsize, windowstep, sample_rate, slice_width)
 
-    #filtered_data = bandpass_filt(sample_rate, low_cut, high_cut, shifted_data_object)
-    #power_data = windowed_bandpower(filtered_data, band_low, band_high, windowsize)
 
-    indices = []
-    for i in range(len(shifted_data_object)):
-        indices.append(len(shifted_data_object[i][0][0]))
-    print(indices)
-    slices=[[] for i in range(len(indices))]
-    slice_width = min(indices)
-    for i in range(len(indices)):
-        lower = sum(indices[:i])
-        upper = lower + slice_width
-        data
+    for i in range(len(power_data)):
+        plt.figure(i+1)
+        plt.clf()
+        plt.plot(power_data[i], 'c-', label=("band power for channel " + str(i+1)), linewidth=1.5)
+        plt.axis('tight')
+        plt.legend(loc='upper left')
+    plt.show()
 
 
     """
