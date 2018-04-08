@@ -43,14 +43,14 @@ def _todict(matobj):
     return dict
 
 
-def get_data(load_file):
+def get_data(load_file, data_type_name):
     mat = loadmat(load_file)
     # channel_data will be a list. Every element of the list
     #  is one trial (an ndarray) containing 8 channels by n number of datapoints
     # To get a single decimal datapoint: channel_data[trial][channel][timestep]
     channel_data = []
-    for i in range(10):
-        data = _todict(mat['Data']['AlphaBlockData'][i])
+    for i in range(len(mat['Data'][data_type_name])):
+        data = _todict(mat['Data'][data_type_name][i])
         channel_data.append(data['PSUEEGData']['Channels'])
     return channel_data
 
@@ -58,7 +58,7 @@ def get_data(load_file):
 def reframe(stimulus_delay, data_object, sample_rate):
     reformatted_data_object = [[[] for i in range(len(data_object[0]))] for i in range(len(data_object))]
     print("Length of reformmatted_data_object: " + str(len(reformatted_data_object)))
-    print("Reformatting data to adjust for trial starting at t=3 in each trial.")
+    print("Reformatting data to adjust for trail start offset.")
     for trial in range(len(data_object)-1):
         for channel in range(len(data_object[0])):
             print("Writing trial " + str(trial+1) + " channel " + str(channel+1))
@@ -89,7 +89,7 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
 
 def bandpass_filt(fs, lowcut, highcut, shifted_data_object):
     # Plot the frequency response for a few different orders.
-    '''plt.figure(1)
+    plt.figure(1)
     plt.clf()
     for order in [3, 6, 9]:
         b, a = butter_bandpass(lowcut, highcut, fs, order=order)
@@ -102,7 +102,7 @@ def bandpass_filt(fs, lowcut, highcut, shifted_data_object):
     plt.ylabel('Gain')
     plt.grid(True)
     plt.legend(loc='best')
-    plt.show()'''
+    plt.show()
 
     # Concatenate all of the trials
     # all_data has shape(numchannels, sum_time_all_trials)
@@ -112,6 +112,13 @@ def bandpass_filt(fs, lowcut, highcut, shifted_data_object):
         print("Iterating trial.")
         for i in range(len(trial)):
             all_data[i] = list(all_data[i]) + list(trial[i][0])
+
+    plt.figure(32)
+    plt.clf()
+    plt.plot(all_data[0], 'c-', label=("Prefiltered channel data for channel " + str(1)), linewidth=1.5)
+    plt.axis('tight')
+    plt.legend(loc='upper left')
+
 
     # Get the indices used to compose / decompose the all_data matrix
     trial_lengths = []
@@ -133,6 +140,13 @@ def bandpass_filt(fs, lowcut, highcut, shifted_data_object):
         #zi = lfilter_zi(b, a)
         #y3, zo = lfilter(b, a, x, zi=zi*x[0])
         y_filtered.append(y)
+
+    plt.figure(33)
+    plt.clf()
+    plt.plot(y_filtered[0], 'c-', label=("Post-filtered channel data for channel " + str(1)), linewidth=1.5)
+    plt.axis('tight')
+    plt.legend(loc='upper left')
+    plt.show()
 
     """
     # Plot some of the filtered data
