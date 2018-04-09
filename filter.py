@@ -52,7 +52,12 @@ def get_data(load_file, data_type_name):
     for i in range(len(mat['Data'][data_type_name])):
         data = _todict(mat['Data'][data_type_name][i])
         channel_data.append(data['PSUEEGData']['Channels'])
-    return channel_data
+    try:
+        trial_type = list(mat['Data']['TrialType'])
+    except:
+        print("No trial type data found. Returning empty vector for trial_type.")
+        trial_type = []
+    return channel_data, trial_type
 
 # Shift stimulus to t = 0 for each trial, and reflect the last bit of the final trial to keep lengths nearly equal
 def reframe(stimulus_delay, data_object, sample_rate):
@@ -216,6 +221,50 @@ def mean_slicer(shifted_data_object, filtered_data):
             print("Working on channel " + str(i + 1) + " slices with indices " + str(lower) + " to " + str(upper) + ".")
             slices[j] = list(np.array(slices[j]) + np.array(filtered_data[j][lower:upper])/(len(indices)+1))
     return slices, slice_width
+
+def trial_slicer(shifted_data_object, filtered_data):
+    indices = []
+    for i in range(len(shifted_data_object)):
+        indices.append(len(shifted_data_object[i][0][0]))
+    print(indices)
+    slice_width = min(indices)
+    print("Slice_width: " + str(slice_width))
+    all_trials = []
+    slice_width = min(indices)
+    for i in range(len(indices)):
+        trial = []
+        for j in range(len(filtered_data)):
+            lower = sum(indices[:i])
+            upper = lower + slice_width
+            print("Working on segmenting channel " + str(i + 1) + " slices with indices " + str(lower) + " to " + str(upper) + ".")
+            trial.append(filtered_data[j][lower:upper])
+        all_trials.append(trial)
+    return all_trials, slice_width
+
+def data_subset(dataset, time_window, sample_rate):
+    t_low = int(time_window[0]*sample_rate)
+    t_high = int(time_window[1]*sample_rate)
+    sub_data = []
+    for trial_num in range(len(dataset)):
+        trial = []
+        for channel_num in range(len(dataset[0])):
+            trial.append(dataset[trial_num][channel_num][t_low:t_high])
+        sub_data.append(trial)
+    return sub_data
+
+def trial_type_separator(dataset, trial_labels):
+    A = []
+    B = []
+    for trial_num in range(len(dataset)):
+        trial = []
+        for channel_num in range(len(dataset[0])):
+            trial.append(dataset[trial_num][channel_num])
+        if trial_labels[trial_num] == 0:
+            A.append(trial)
+        else:
+            B.append(trial)
+    return A, B
+
 
 def matrix_plotter(plot_data, plot_label):
     for i in range(len(plot_data)):

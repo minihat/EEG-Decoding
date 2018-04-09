@@ -8,7 +8,7 @@ import scipy.linalg as la
 # otherwise there can be no spatial filtering since the trials cannot be compared
 def CSP(*tasks):
 	if len(tasks) < 2:
-		print "Must have at least 2 tasks for filtering."
+		print("Must have at least 2 tasks for filtering.")
 		return (None,) * len(tasks)
 	else:
 		filters = ()
@@ -74,3 +74,6 @@ def spatialFilter(Ra,Rb):
 	# The projection matrix (the spatial filter) may now be obtained
 	SFa = np.dot(np.transpose(U1),P)
 	return SFa.astype(np.float32)
+
+if __name__ == '__main__':
+	print("Hello, World")
