@@ -88,6 +88,7 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
     return y
 
 def bandpass_filt(fs, lowcut, highcut, shifted_data_object):
+    """
     # Plot the frequency response for a few different orders.
     plt.figure(1)
     plt.clf()
@@ -103,6 +104,7 @@ def bandpass_filt(fs, lowcut, highcut, shifted_data_object):
     plt.grid(True)
     plt.legend(loc='best')
     plt.show()
+    """
 
     # Concatenate all of the trials
     # all_data has shape(numchannels, sum_time_all_trials)
@@ -112,13 +114,13 @@ def bandpass_filt(fs, lowcut, highcut, shifted_data_object):
         print("Iterating trial.")
         for i in range(len(trial)):
             all_data[i] = list(all_data[i]) + list(trial[i][0])
-
+    """
     plt.figure(32)
     plt.clf()
     plt.plot(all_data[0], 'c-', label=("Prefiltered channel data for channel " + str(1)), linewidth=1.5)
     plt.axis('tight')
     plt.legend(loc='upper left')
-
+    """
 
     # Get the indices used to compose / decompose the all_data matrix
     trial_lengths = []
@@ -141,6 +143,7 @@ def bandpass_filt(fs, lowcut, highcut, shifted_data_object):
         #y3, zo = lfilter(b, a, x, zi=zi*x[0])
         y_filtered.append(y)
 
+    """
     plt.figure(33)
     plt.clf()
     plt.plot(y_filtered[0], 'c-', label=("Post-filtered channel data for channel " + str(1)), linewidth=1.5)
@@ -148,7 +151,7 @@ def bandpass_filt(fs, lowcut, highcut, shifted_data_object):
     plt.legend(loc='upper left')
     plt.show()
 
-    """
+
     # Plot some of the filtered data
     for i in range(len(y_filtered)):
         plt.figure(2+i)
@@ -222,6 +225,13 @@ def matrix_plotter(plot_data, plot_label):
         plt.axis('tight')
         plt.legend(loc='upper left')
     plt.show()
+
+def channel_remover(dataset, rm_channels_list):
+    for channel_number in reversed(sorted(rm_channels_list)):
+        print("removing channel " + str(channel_number))
+        dataset = dataset[:channel_number - 1] + dataset[channel_number:]
+    return dataset
+
 
 if __name__ == '__main__':
     sample_rate = 1000 #Hz

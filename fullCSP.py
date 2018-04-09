@@ -16,14 +16,19 @@ band_low = 7 #Hz
 band_high = 14 #Hz
 windowsize = 3 #seconds
 windowstep = .2 #seconds
+# A list of channels not to consider in calculations
+garbage_channels = [6,7]
 
 # Load EEG data from .mat file
 data_object = get_data(load_file, data_type_name)
 # Shift each trial by offset to the left. Last trial will have mirrored end.
 shifted_data_object = reframe(stimulus_delay, data_object, sample_rate)
-print(len(shifted_data_object))
 # Apply a bandpass filter and concatenate all trials
 filtered_data = bandpass_filt(sample_rate, low_cut, high_cut, shifted_data_object)
+# Remove channels listed in garbage_channels
+good_channels = channel_remover(filtered_data, garbage_channels)
+
+print("DIM good_channels: " + str(len(good_channels)) + " by " + str(len(good_channels[1])))
 # Take the mean of filtered data by trial (now length = min(length(trials)))
 #mean_trial_data, slice_width = mean_slicer(shifted_data_object, filtered_data)
 # Calculate the bandpower for alpha, beta, etc defined by [band_low, band_high]
