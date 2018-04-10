@@ -18,7 +18,7 @@ windowsize = 3 #seconds
 windowstep = .2 #seconds
 
 # Load EEG data from .mat file
-data_object = get_data(load_file, data_type_name)
+data_object, labels = get_data(load_file, data_type_name)
 # Shift each trial by offset to the left. Last trial will have mirrored end.
 shifted_data_object = reframe(stimulus_delay, data_object, sample_rate)
 # Apply a bandpass filter and concatenate all trials

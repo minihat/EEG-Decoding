@@ -265,7 +265,6 @@ def trial_type_separator(dataset, trial_labels):
             B.append(trial)
     return A, B
 
-
 def matrix_plotter(plot_data, plot_label):
     for i in range(len(plot_data)):
         plt.figure(i+1)
@@ -281,6 +280,9 @@ def channel_remover(dataset, rm_channels_list):
         dataset = dataset[:channel_number - 1] + dataset[channel_number:]
     return dataset
 
+def apply_CSP_filter(csp_filter, data):
+    out_data = np.matmul(csp_filter, data)
+    return out_data
 
 if __name__ == '__main__':
     sample_rate = 1000 #Hz

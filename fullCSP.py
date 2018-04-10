@@ -59,9 +59,10 @@ sfb = spatialFilter(cov_B, cov_C)
 sfb2 = spatialFilter(cov_C, cov_B)
 print("Spatial Filters:")
 print(sfa, sfa2, sfb, sfb2)
-# Calculate the bandpower for alpha, beta, etc defined by [band_low, band_high]
-#alpha_power_data = windowed_bandpower(mean_trial_data, band_low, band_high, windowsize, windowstep, sample_rate, slice_width)
 
+# Apply the CSP filters to trial data
+csp_a_filtered = apply_CSP_filter(sfa, filtered_good_trials[15])
+matrix_plotter(csp_a_filtered, "CSP_A_FILTERED")
 # Plot the result
 #matrix_plotter(alpha_power_data, "alpha bandpower")
 
