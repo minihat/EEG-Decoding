@@ -274,6 +274,19 @@ def matrix_plotter(plot_data, plot_label):
         plt.legend(loc='upper left')
     plt.show()
 
+def channel_plotter(plot_data, channel_list, plot_title, sample_rate):
+    fig, ax = plt.subplots()
+    time_vec = np.asarray(list(range(len(plot_data[0]))))/float(sample_rate)
+    for channel in range(len(channel_list)):
+        line_label = "Channel " + str(channel_list[channel])
+        ax.plot(time_vec, plot_data[channel_list[channel]-1], linewidth=2, label=line_label)
+    plt.legend(loc='lower right')
+    plt.title(str(plot_title))
+    plt.xlabel("Time (s)")
+    plt.ylabel("EEG Signal")
+    plt.show()
+
+
 def channel_remover(dataset, rm_channels_list):
     for channel_number in reversed(sorted(rm_channels_list)):
         print("removing channel " + str(channel_number))
@@ -283,6 +296,13 @@ def channel_remover(dataset, rm_channels_list):
 def apply_CSP_filter(csp_filter, data):
     out_data = np.matmul(csp_filter, data)
     return out_data
+
+def mean_of_channels(data, channel_list):
+    ch_sum = np.asarray(data[channel_list[0]-1])
+    for i in range(1,len(channel_list)):
+        ch_sum = ch_sum + np.asarray(data[channel_list[i]-1])
+    mean = ch_sum / len(channel_list)
+    return list(mean)
 
 if __name__ == '__main__':
     sample_rate = 1000 #Hz

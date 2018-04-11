@@ -36,7 +36,8 @@ at_rest_subset = data_subset(filtered_good_trials, [0,3.5], sample_rate)
 action_subset = data_subset(filtered_good_trials, [3.5,8.5], sample_rate)
 # Separate trials by label from trial_type variable returned by get_data
 A, B = trial_type_separator(action_subset, trial_type)
-# Compute mean covariance matrices
+###########################################################################
+#Compute mean covariance matrices
 ## For type A data
 cov_A = covM(A[0])/len(A)
 for trial_num in range(1,len(A)):
@@ -61,9 +62,73 @@ print("Spatial Filters:")
 print(sfa, sfa2, sfb, sfb2)
 
 # Apply the CSP filters to trial data
-csp_a_filtered = apply_CSP_filter(sfa, filtered_good_trials[15])
-matrix_plotter(csp_a_filtered, "CSP_A_FILTERED")
-# Plot the result
-#matrix_plotter(alpha_power_data, "alpha bandpower")
+csp_a_filtered = apply_CSP_filter(sfa, filtered_good_trials[4]) # fill in trial number
+
+# Plot some of the CSP filtered channels
+#channel_plotter(csp_a_filtered, [1,6], "CSP A FILTERED", sample_rate)
+# Compute the average of L/R channels, and plot
+csp_vec = []
+csp_vec.append(mean_of_channels(csp_a_filtered, [1,2,3])) # right channels
+csp_vec.append(mean_of_channels(csp_a_filtered, [4,5,6])) # left channels
+
+#channel_plotter(csp_vec, [1,2], "CSP filtered mean channels right (1) and left (2)", sample_rate)
+###########################################################################
+# Try Bruce's prefabbed transformation matrices
+Wb1 = [[0,1,0,0,0,0],[0,0,0,0,1,0]]
+Wb2 = [[-1,2,-1,0,0,0],[0,0,0,-1,2,-1]]
+
+Wb1_pred = []
+Wb2_pred = []
+csp_a_pred = []
+for trial in range(len(filtered_good_trials)):
+    csp_a = apply_CSP_filter(sfa, filtered_good_trials[trial])
+
+    csp_Wb1 = apply_CSP_filter(Wb1, filtered_good_trials[trial])
+    #channel_plotter(csp_Wb1, [1,2], "CSP with Wb1 Filter", sample_rate)
+
+    csp_Wb2 = apply_CSP_filter(Wb2, filtered_good_trials[trial])
+    #channel_plotter(csp_Wb2, [1,2], "CSP with Wb2 Filter", sample_rate)
+
+    var_csp_a = [np.var(csp_a[0]), np.var(csp_a[1])]
+    var_Wb1 = [np.var(csp_Wb1[0]), np.var(csp_Wb1[1])]
+    var_Wb2 = [np.var(csp_Wb2[0]), np.var(csp_Wb2[1])]
+    if var_csp_a[0] > var_csp_a[1]:
+        csp_a_pred.append(0)
+    else:
+        csp_a_pred.append(1)
+    if var_Wb1[0] > var_Wb1[1]:
+        Wb1_pred.append(0)
+    else:
+        Wb1_pred.append(1)
+    if var_Wb2[0] > var_Wb2[1]:
+        Wb2_pred.append(0)
+    else:
+        Wb2_pred.append(1)
+
+def accuracy_report(correct_trial_types, pred_trial_types):
+    wrong_pred = 0
+    for i in range(len(correct_trial_types)):
+        wrong_pred += abs(correct_trial_types[i] - pred_trial_types[i])
+    wrong_ratio = float(wrong_pred) / float(len(correct_trial_types))
+    accuracy = 100 - (100 * wrong_ratio)
+    return accuracy
+
+csp_a_acc = accuracy_report(trial_type, csp_a_pred)
+Wb1_acc = accuracy_report(trial_type, Wb1_pred)
+Wb2_acc = accuracy_report(trial_type, Wb2_pred)
+
+print("Correct trial types: ")
+print(trial_type)
+print("cspA predicted trial types: ")
+print(csp_a_pred)
+print("Accuracy: ", csp_a_acc)
+print("Wb1 Predicted trial types: ")
+print(Wb1_pred)
+print("Accuracy: ", Wb1_acc)
+print("Wb2 Predicted trial types: ")
+print(Wb2_pred)
+print("Accuracy: ", Wb2_acc)
+
+
 
 sys.stdout.write('Hello World')
