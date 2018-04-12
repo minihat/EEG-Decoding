@@ -1,11 +1,11 @@
-from filter import *
+from filter2 import *
 from CSP import covarianceMatrix as covM
 from CSP import spatialFilter
 # Compute the CSP matrix given a .mat file with L/R tap EEG data
 # Ken Hall 3/28/18
 
 sample_rate = 1000 #Hz
-load_file = '412.mat'
+load_file = '412_2.mat'
 data_type_name = 'ERDTrialData'
 #load_file = 'feb_1_data.mat'
 # Reframe data due to taste
@@ -19,7 +19,7 @@ band_high = 14 #Hz
 windowsize = 3 #seconds
 windowstep = .2 #seconds
 # A list of channels not to consider in calculations
-garbage_channels = [5,12,15,16]
+garbage_channels = [9,10,11,12,13,14,15,16]
 
 # Load EEG data from .mat file
 data_object, trial_type = get_data(load_file, data_type_name)
@@ -74,8 +74,8 @@ print(sfa, sfa2, sfb, sfb2)
 #channel_plotter(csp_vec, [1,2], "CSP filtered mean channels right (1) and left (2)", sample_rate)
 ###########################################################################
 # Try Bruce's prefabbed transformation matrices
-Wb1 = [[0,1,0,0,0,0],[0,0,0,0,1,0]]
-Wb2 = [[-1,2,-1,0,0,0],[0,0,0,-1,2,-1]]
+Wb1 = [[0,1,0,0,0,0,0,0],[0,0,0,0,1,0,0,0]]
+Wb2 = [[-1,2,-1,0,0,0,0,0],[0,0,0,-1,2,-1,0,0]]
 
 Wb1_pred = []
 Wb2_pred = []

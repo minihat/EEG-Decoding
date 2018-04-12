@@ -3,7 +3,7 @@ from filter2 import *
 # Ken Hall 3/28/18
 
 sample_rate = 1000 #Hz
-load_file = '412.mat'
+load_file = '412_2.mat'
 data_type_name = 'ERDTrialData'
 #load_file = 'feb_1_data.mat'
 # Reframe data due to taste
