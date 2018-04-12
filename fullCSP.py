@@ -80,9 +80,12 @@ Wb2 = [[-1,2,-1,0,0,0],[0,0,0,-1,2,-1]]
 Wb1_pred = []
 Wb2_pred = []
 csp_a_pred = []
+
+csp_a_av = np.zeros((int(len(filtered_good_trials[0])), int(len(filtered_good_trials[0][0]))))
 for trial in range(len(filtered_good_trials)):
     csp_a = apply_CSP_filter(sfa, filtered_good_trials[trial])
-
+    #channel_plotter(csp_a, [1,2], "CSP with CSP_A Filer", sample_rate)
+    csp_a_av += np.asarray(csp_a)
     csp_Wb1 = apply_CSP_filter(Wb1, filtered_good_trials[trial])
     #channel_plotter(csp_Wb1, [1,2], "CSP with Wb1 Filter", sample_rate)
 
@@ -104,6 +107,9 @@ for trial in range(len(filtered_good_trials)):
         Wb2_pred.append(0)
     else:
         Wb2_pred.append(1)
+
+csp_a_av = csp_a_av / len(filtered_good_trials)
+channel_plotter(csp_a_av, [2,5], "CSP A average", sample_rate)
 
 def accuracy_report(correct_trial_types, pred_trial_types):
     wrong_pred = 0
