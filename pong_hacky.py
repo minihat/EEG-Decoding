@@ -10,6 +10,10 @@ num_players = sys.argv[1]
 pygame.init()
 fps = pygame.time.Clock()
 
+
+# Update_rate
+update_rate = 4 #Hz
+
 #colors
 WHITE = (255,255,255)
 RED = (255,0,0)
@@ -169,11 +173,13 @@ init()
 
 
 #game loop
+frame_counter = 0
+frame_reset_count = int(60/update_rate)
 while True:
 
     draw(window)
 
-    for event in pygame.event.get():
+    '''for event in pygame.event.get():
 
         if event.type == KEYDOWN:
             keydown(event)
@@ -181,7 +187,21 @@ while True:
             keyup(event)
         elif event.type == QUIT:
             pygame.quit()
-            sys.exit()
-
+            sys.exit()'''
+    if frame_counter == frame_reset_count:
+        frame_counter = 0
+        f = open("hackytransferfile.txt", "r")
+        try:
+            move_class = int(f.read())
+        except:
+            move_class = 0
+        if move_class == -1:
+            paddle1_vel = -8
+        if move_class == 0:
+            paddle1_vel = 0
+        if move_class == 1:
+            paddle1_vel = 8
+        f.close()
+    frame_counter += 1
     pygame.display.update()
     fps.tick(60)
