@@ -34,10 +34,14 @@ tic
 for ind = 1:nTrials
     t0 = clock;
     data = [];
-    while etime(clock, t0) < .98
-        [psuEEG,NewData] = PSUEEG16_ReadData(psuEEG);
-        data = [data NewData.Channels];
-    end
+%     while etime(clock, t0) < .98
+%         [psuEEG,NewData] = PSUEEG16_ReadData(psuEEG);
+%         data = [data NewData.Channels];
+%     end
+    pause(0.98)
+    [psuEEG,NewData] = PSUEEG16_ReadData(psuEEG);
+    data = [data NewData.Channels];
+    
 toc;
 fileID = fopen('hackytransferfile.txt','w');
 output = classify_trial(data);
