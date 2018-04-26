@@ -185,7 +185,7 @@ while True:
 
     draw(window)
 # Comment here down to end of for
-    for event in pygame.event.get():
+    """for event in pygame.event.get():
 
         if event.type == KEYDOWN:
             keydown(event)
@@ -193,8 +193,8 @@ while True:
             keyup(event)
         elif event.type == QUIT:
             pygame.quit()
-            sys.exit()
-    """if frame_counter == frame_reset_count:
+            sys.exit()"""
+    if frame_counter == frame_reset_count:
         frame_counter = 0
         f = open("hackytransferfile.txt", "r")
         try:
@@ -208,6 +208,6 @@ while True:
         if move_class == 1:
             paddle1_vel = 8
         f.close()
-    frame_counter += 1"""
+    frame_counter += 1
     pygame.display.update()
     fps.tick(60)
