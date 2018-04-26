@@ -5,7 +5,7 @@ import pygame, sys
 from pygame.locals import *
 import sys
 
-num_players = sys.argv[1]
+paddle_size_param = sys.argv[1]
 
 pygame.init()
 fps = pygame.time.Clock()
@@ -13,7 +13,7 @@ fps = pygame.time.Clock()
 
 # Update_rate
 update_rate = 4 #Hz
-
+num_players = 1
 #colors
 WHITE = (255,255,255)
 RED = (255,0,0)
@@ -21,11 +21,13 @@ GREEN = (0,255,0)
 BLACK = (0,0,0)
 
 #globals
-kens_acceleration_constant = 1.1
-WIDTH = 400
+kens_acceleration_constant = 1.0
+WIDTH = 600
 HEIGHT = 600
 BALL_RADIUS = 20
 PAD_WIDTH = 80
+PAD_1_WIDTH = int(PAD_WIDTH * float(paddle_size_param))
+HALF_PAD_1_WIDTH = PAD_1_WIDTH // 2
 PAD_HEIGHT = 8
 HALF_PAD_WIDTH = PAD_WIDTH // 2
 HALF_PAD_HEIGHT = PAD_HEIGHT // 2
@@ -45,8 +47,8 @@ pygame.display.set_caption('Hello World')
 def ball_init(right):
     global ball_pos, ball_vel # these are vectors stored as lists
     ball_pos = [WIDTH//2,HEIGHT//2]
-    horz = random.randrange(1,3)
-    vert = random.randrange(2,4)
+    horz = random.randrange(1,2)
+    vert = random.randrange(1,2)
 
     if right == False:
         vert = - vert
@@ -82,12 +84,16 @@ def draw(canvas):
     ball_pos[1] += int(ball_vel[1])
 
     # update paddle's horizontal position, keep paddle on the screen
-    if paddle1_pos[0] > HALF_PAD_WIDTH and paddle1_pos[0] < WIDTH - HALF_PAD_WIDTH:
+    if paddle1_pos[0] > HALF_PAD_1_WIDTH and paddle1_pos[0] < WIDTH - HALF_PAD_1_WIDTH:
         paddle1_pos[0] += paddle1_vel
-    elif paddle1_pos[0] == HALF_PAD_WIDTH and paddle1_vel > 0:
+    elif paddle1_pos[0] == HALF_PAD_1_WIDTH and paddle1_vel > 0:
         paddle1_pos[0] += paddle1_vel
-    elif paddle1_pos[0] == WIDTH - HALF_PAD_WIDTH and paddle1_vel < 0:
+    elif paddle1_pos[0] == WIDTH - HALF_PAD_1_WIDTH and paddle1_vel < 0:
         paddle1_pos[0] += paddle1_vel
+    elif paddle1_pos[0] < HALF_PAD_1_WIDTH:
+        paddle1_pos[0] = HALF_PAD_1_WIDTH
+    elif paddle1_pos[0] > WIDTH - HALF_PAD_1_WIDTH:
+        paddle1_pos[0] = WIDTH - HALF_PAD_1_WIDTH
 
     if num_players == 1:
         paddle2_pos[0] = ball_pos[0]
@@ -111,7 +117,7 @@ def draw(canvas):
 
     #draw paddles and ball
     pygame.draw.circle(canvas, RED, ball_pos, 20, 0)
-    pygame.draw.polygon(canvas, GREEN, [[paddle1_pos[0] - HALF_PAD_WIDTH, paddle1_pos[1] - HALF_PAD_HEIGHT], [paddle1_pos[0] - HALF_PAD_WIDTH, paddle1_pos[1] + HALF_PAD_HEIGHT], [paddle1_pos[0] + HALF_PAD_WIDTH, paddle1_pos[1] + HALF_PAD_HEIGHT], [paddle1_pos[0] + HALF_PAD_WIDTH, paddle1_pos[1] - HALF_PAD_HEIGHT]], 0)
+    pygame.draw.polygon(canvas, GREEN, [[paddle1_pos[0] - HALF_PAD_1_WIDTH, paddle1_pos[1] - HALF_PAD_HEIGHT], [paddle1_pos[0] - HALF_PAD_1_WIDTH, paddle1_pos[1] + HALF_PAD_HEIGHT], [paddle1_pos[0] + HALF_PAD_1_WIDTH, paddle1_pos[1] + HALF_PAD_HEIGHT], [paddle1_pos[0] + HALF_PAD_1_WIDTH, paddle1_pos[1] - HALF_PAD_HEIGHT]], 0)
     pygame.draw.polygon(canvas, GREEN, [[paddle2_pos[0] - HALF_PAD_WIDTH, paddle2_pos[1] - HALF_PAD_HEIGHT], [paddle2_pos[0] - HALF_PAD_WIDTH, paddle2_pos[1] + HALF_PAD_HEIGHT], [paddle2_pos[0] + HALF_PAD_WIDTH, paddle2_pos[1] + HALF_PAD_HEIGHT], [paddle2_pos[0] + HALF_PAD_WIDTH, paddle2_pos[1] - HALF_PAD_HEIGHT]], 0)
 
     #ball collision check on top and bottom walls
@@ -129,7 +135,7 @@ def draw(canvas):
         r_score += 1
         ball_init(True)
 
-    if int(ball_pos[1]) >= HEIGHT + 1 - BALL_RADIUS - PAD_HEIGHT and int(ball_pos[0]) in range(paddle1_pos[0] - HALF_PAD_WIDTH,paddle1_pos[0] + HALF_PAD_WIDTH,1):
+    if int(ball_pos[1]) >= HEIGHT + 1 - BALL_RADIUS - PAD_HEIGHT and int(ball_pos[0]) in range(paddle1_pos[0] - HALF_PAD_1_WIDTH,paddle1_pos[0] + HALF_PAD_1_WIDTH,1):
         ball_vel[1] = -ball_vel[1]
         ball_vel[1] *= kens_acceleration_constant
         ball_vel[0] *= kens_acceleration_constant
@@ -178,8 +184,8 @@ frame_reset_count = int(60/update_rate)
 while True:
 
     draw(window)
-
-    '''for event in pygame.event.get():
+# Comment here down to end of for
+    for event in pygame.event.get():
 
         if event.type == KEYDOWN:
             keydown(event)
@@ -187,8 +193,8 @@ while True:
             keyup(event)
         elif event.type == QUIT:
             pygame.quit()
-            sys.exit()'''
-    if frame_counter == frame_reset_count:
+            sys.exit()
+    """if frame_counter == frame_reset_count:
         frame_counter = 0
         f = open("hackytransferfile.txt", "r")
         try:
@@ -202,6 +208,6 @@ while True:
         if move_class == 1:
             paddle1_vel = 8
         f.close()
-    frame_counter += 1
+    frame_counter += 1"""
     pygame.display.update()
     fps.tick(60)
